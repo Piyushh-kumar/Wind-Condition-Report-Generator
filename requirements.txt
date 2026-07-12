@@ -1,3 +1,9 @@
 streamlit
 rasterio
 streamlit-js-eval
+fastapi
+uvicorn
+resend
+pandas
+reportlab
+plotly
