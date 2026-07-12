@@ -3,7 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import resend
 import os
-from calculations import get_all_wind_speeds, get_all_power_densities, interpolate
+
+# UPDATED IMPORTS:
+from gwa_lookup import get_all_wind_speeds  # Correct file for wind data
+from power_lookup import get_all_power_densities # Correct file for power data
+from calculations import interpolate
 from report_generator import generate_report
 
 app = FastAPI()
@@ -11,26 +15,28 @@ app = FastAPI()
 # Enable CORS so your React site can talk to this API
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-resend.api_key = "YOUR_RESEND_API_KEY"
+resend.api_key = os.environ.get("RESEND_API_KEY") # Ensure this is read from environment variables
 
 class AssessmentRequest(BaseModel):
     email: str
-    lat: float
-    lon: float
+    location: str # Assuming location is a string or handle coordinate extraction here
     mast_height: float
 
 @app.post("/generate-report")
 async def generate_report_api(req: AssessmentRequest):
-    # 1. Run your existing engineering logic
-    winds = get_all_wind_speeds(req.lat, req.lon)
-    powers = get_all_power_densities(req.lat, req.lon)
+    # This assumes location string format might need parsing; 
+    # adjust based on how your geocoding works
+    lat, lon = 26.4499, 80.3319 # Placeholder: Update with your geocoding logic
+    
+    winds = get_all_wind_speeds(lat, lon)
+    powers = get_all_power_densities(lat, lon)
     wind_speed = interpolate(req.mast_height, winds)
     
-    # 2. Generate PDF
+    # Generate PDF
     pdf_path = "Wind_AI_Siting_Report.pdf"
-    generate_report(pdf_path, req.lat, req.lon, 100, wind_speed, 500, "Class I", 85, "Good", "Roof", {})
+    generate_report(pdf_path, lat, lon, 100, wind_speed, 500, "Class I", 85, "Good", "Roof", {})
     
-    # 3. Email to User
+    # Email to User
     resend.Emails.send({
         "from": "onboarding@resend.dev",
         "to": req.email,
