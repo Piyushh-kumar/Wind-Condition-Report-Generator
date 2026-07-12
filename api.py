@@ -4,13 +4,13 @@ from pydantic import BaseModel
 import resend
 import os
 
-# UPDATED IMPORTS:
-from gwa_lookup import get_all_wind_speeds  # Correct file for wind data
-from power_lookup import get_all_power_densities # Correct file for power data
+from gwa_lookup import get_all_wind_speeds
+from power_lookup import get_all_power_densities
 from calculations import interpolate
-from report_generator import generate_report
+from report_generator import generate_report # Ensure this underscore is present
 
 app = FastAPI()
+# ... (rest of your code)
 
 # Enable CORS so your React site can talk to this API
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
